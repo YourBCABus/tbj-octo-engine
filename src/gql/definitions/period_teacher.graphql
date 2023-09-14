@@ -1,0 +1,15 @@
+query PeriodTeacher {
+  periods:allPeriods {
+    id
+    timeRange {
+      start
+      end
+    }
+    teachersAbsent {
+      id
+      name {
+        normal
+      }
+    }
+  }
+}
