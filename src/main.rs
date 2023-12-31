@@ -1,7 +1,8 @@
-use notifications::{issue_teacher_absence_notification, notification_loop};
+use notifications::notification_loop;
 
 mod notifications;
 mod gql;
+mod env;
 
 use actix_web::{get, App, HttpResponse, HttpServer, Responder};
 
@@ -11,11 +12,8 @@ async fn ping() -> impl Responder {
 }
 
 #[actix_web::main]
-async fn main() -> std::io::Result<()> {    
-    match dotenvy::dotenv() {
-        Ok(_) => println!("Successfully loaded .env"),
-        Err(e) => eprintln!("Error loading dotenv: {}", e),
-    };
+async fn main() -> std::io::Result<()> {
+    env::ensure_env();
 
     tokio::spawn(async {
         notification_loop().await.unwrap();

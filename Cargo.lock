@@ -2128,6 +2128,7 @@ dependencies = [
  "futures",
  "graphql_client",
  "juniper",
+ "lazy_static",
  "reqwest",
  "serde",
  "tokio",
