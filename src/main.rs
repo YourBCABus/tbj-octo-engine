@@ -1,8 +1,9 @@
-use notifications::notification_loop;
+use status_loop::status_loop;
 
-mod notifications;
-mod gql;
 mod env;
+mod gql;
+mod notifications;
+mod status_loop;
 
 use actix_web::{get, App, HttpResponse, HttpServer, Responder};
 
@@ -16,7 +17,7 @@ async fn main() -> std::io::Result<()> {
     env::ensure_env();
 
     tokio::spawn(async {
-        notification_loop().await.unwrap();
+        status_loop().await.unwrap();
     });
 
     return HttpServer::new(|| {

@@ -1,6 +1,7 @@
 query PeriodTeacher {
   periods:allPeriods {
     id
+    name
     timeRange {
       start
       end

@@ -1,0 +1,14 @@
+query Teachers {
+  teachers:allTeachers {
+    id
+    name {
+      name: formatted(formatStyle: HONORIFIC_LAST)
+    }
+    fullyAbsent
+    absence {
+      id
+      name
+      timeRange { start }
+    }
+  }
+}
