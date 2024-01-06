@@ -3,10 +3,20 @@ use std::error::Error;
 
 use chrono::Timelike;
 
-use crate::notifications::{NotificationDetails, Topic, NotificationType, issue_notif};
+use crate::notifications::{
+    NotificationDetails, NotificationType, 
+    Topic, PeriodList,
+    issue_notif,
+};
 
-use crate::gql::period_teacher::{PeriodTeacherPeriods, self};
-use crate::gql::teachers::{self, TeachersTeachersAbsence};
+use crate::gql::period_teacher::{
+    PeriodTeacherPeriods,
+    Variables as PeriodTeacherVariables,
+};
+use crate::gql::teachers::{
+    TeachersTeachersAbsence,
+    Variables as TeachersVariables,
+};
 use crate::gql::{fetch_teacher_periods, fetch_teachers};
 
 
@@ -43,7 +53,7 @@ pub async fn status_loop() -> Result<(), Box<dyn Error + Send>> {
     loop {
         tokio::time::sleep(tokio::time::Duration::from_secs(10)).await;
 
-        println!("Iteration of notification loop");
+        println!("Iteration of notification loop at [{:5}]", chrono::Utc::now().time().num_seconds_from_midnight() as f64);
         let current_period = get_current_state().await;
 
         match (current_period, prior_state.clone()) {
@@ -88,7 +98,7 @@ pub async fn status_loop() -> Result<(), Box<dyn Error + Send>> {
 }
 
 async fn get_all_periods() -> Option<Vec<PeriodTeacherPeriods>> {
-    let data = match fetch_teacher_periods(period_teacher::Variables).await {
+    let data = match fetch_teacher_periods(PeriodTeacherVariables).await {
         Ok(data) => data,
         Err(e) => {
             eprintln!("Error fetching teacher periods: {:#?}", e);
@@ -106,7 +116,7 @@ async fn get_all_periods() -> Option<Vec<PeriodTeacherPeriods>> {
 }
 
 async fn get_current_period() -> Option<PeriodTeacherPeriods> {
-    let data = match fetch_teacher_periods(period_teacher::Variables).await {
+    let data = match fetch_teacher_periods(PeriodTeacherVariables).await {
         Ok(data) => data,
         Err(e) => {
             eprintln!("Error fetching teacher periods: {:#?}", e);
@@ -133,7 +143,7 @@ async fn get_current_period() -> Option<PeriodTeacherPeriods> {
 }
 
 async fn get_current_teachers() -> Option<HashMap<uuid::Uuid, TeacherState>> {
-    let data = match fetch_teachers(teachers::Variables).await {
+    let data = match fetch_teachers(TeachersVariables).await {
         Ok(data) => data,
         Err(e) => {
             eprintln!("Error fetching teachers: {:#?}", e);
@@ -212,12 +222,13 @@ pub async fn get_midday_notifs(
         let id = uuid::Uuid::nil();
         let notification_type = match &teacher.absence {
             Absence::FullyAbsent => NotificationType::UpdateTeacherFullyAbsent,
-            Absence::PartiallyAbsent { periods } => {
-                let periods = all_periods
+            Absence::PartiallyAbsent { periods: period_ids } => {
+                let period_inclusion_list: Vec<_> = all_periods
                     .iter()
-                    .filter(|p| periods.contains(&p.id))
-                    .map(|p| p.name.clone())
+                    .map(|p| (p.name.as_str(), period_ids.contains(&p.id)))
                     .collect();
+
+                let periods = PeriodList::new(&period_inclusion_list);
                 NotificationType::UpdateTeacherPartiallyAbsent { periods }
             },
             Absence::Present => NotificationType::UpdateTeacherPresent,
@@ -273,12 +284,14 @@ pub async fn get_begin_day_notifs(current: &PeriodState) -> impl Iterator<Item =
         let id = uuid::Uuid::nil();
         let notification_type = match &teacher.absence {
             Absence::FullyAbsent => NotificationType::DayStartFullyAbsent,
-            Absence::PartiallyAbsent { periods } => {
-                let periods = all_periods
+            Absence::PartiallyAbsent { periods: period_ids } => {
+
+                let period_inclusion_list: Vec<_> = all_periods
                     .iter()
-                    .filter(|p| periods.contains(&p.id))
-                    .map(|p| p.name.clone())
+                    .map(|p| (p.name.as_str(), period_ids.contains(&p.id)))
                     .collect();
+
+                let periods = PeriodList::new(&period_inclusion_list);
                 NotificationType::DayStartPartiallyAbsent { periods }
             },
             Absence::Present => continue

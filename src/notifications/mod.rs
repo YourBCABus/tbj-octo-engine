@@ -1,4 +1,5 @@
 mod payload;
+mod utils;
 
 use std::error::Error;
 
@@ -7,16 +8,17 @@ use fcm::{Client, MessageBuilder, NotificationBuilder};
 use self::payload::NotificationPayload;
 
 pub use payload::{ NotificationDetails, Topic };
+pub use utils::PeriodList;
 
 
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum NotificationType {
     DayStartFullyAbsent,
-    DayStartPartiallyAbsent { periods: Vec<String> },
+    DayStartPartiallyAbsent { periods: PeriodList },
 
     UpdateTeacherFullyAbsent,
-    UpdateTeacherPartiallyAbsent { periods: Vec<String> },
+    UpdateTeacherPartiallyAbsent { periods: PeriodList },
     UpdateTeacherPresent,
 
     ReminderTeacherBackIn,

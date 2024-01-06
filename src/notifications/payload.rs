@@ -48,7 +48,7 @@ impl From<NotificationDetails> for NotificationPayload {
             DayStartPartiallyAbsent { periods } => Self {
                 topic: value.topic,
                 title: format!("{} Partially Absent", value.teacher_name),
-                body: Some(format!("{} is absent today during period(s) {}. Please sign into upper caf.", value.teacher_name, periods.join(", "))),
+                body: Some(format!("{} is absent today during period(s) {}. Please sign into upper caf.", value.teacher_name, periods)),
             },
             UpdateTeacherFullyAbsent => Self {
                 topic: value.topic,
@@ -58,7 +58,7 @@ impl From<NotificationDetails> for NotificationPayload {
             UpdateTeacherPartiallyAbsent { periods } => Self {
                 topic: value.topic,
                 title: format!("{} Partially Absent", value.teacher_name),
-                body: Some(format!("{} will not be here for period(s) {}. Please sign into upper caf.", value.teacher_name, periods.join(", "))),
+                body: Some(format!("{} will not be here for period(s) {}. Please sign into upper caf.", value.teacher_name, periods)),
             },
             UpdateTeacherPresent => Self {
                 topic: value.topic,
