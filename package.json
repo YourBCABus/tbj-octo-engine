@@ -1,0 +1,11 @@
+{
+    "scripts": {
+        "start": "cargo run --release",
+        "start-binary": "./octo-engine",
+        
+        "up": "pm2 start ./target/release/octo-engine --name octo-engine",
+        "up-binary": "pm2 start ./octo-engine --name octo-engine",
+
+        "down": "pm2 stop octo-engine && pm2 delete octo-engine"
+    }
+}

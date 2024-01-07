@@ -1496,6 +1496,27 @@ dependencies = [
 ]
 
 [[package]]
+name = "octo-engine"
+version = "0.1.0"
+dependencies = [
+ "actix-web",
+ "arcs-env-rs",
+ "arcs-logging-rs",
+ "async-graphql",
+ "chrono",
+ "dotenvy",
+ "fcm",
+ "futures",
+ "graphql_client",
+ "juniper",
+ "lazy_static",
+ "reqwest",
+ "serde",
+ "tokio",
+ "uuid 1.4.1",
+]
+
+[[package]]
 name = "once_cell"
 version = "1.18.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2112,27 +2133,6 @@ dependencies = [
  "proc-macro2",
  "quote",
  "unicode-ident",
-]
-
-[[package]]
-name = "tbj-octo-engine"
-version = "0.1.0"
-dependencies = [
- "actix-web",
- "arcs-env-rs",
- "arcs-logging-rs",
- "async-graphql",
- "chrono",
- "dotenvy",
- "fcm",
- "futures",
- "graphql_client",
- "juniper",
- "lazy_static",
- "reqwest",
- "serde",
- "tokio",
- "uuid 1.4.1",
 ]
 
 [[package]]
