@@ -20,6 +20,7 @@ pub struct NotificationDetails {
     pub teacher_name: String,
     pub topic: Topic,
     pub notification_type: NotificationType,
+    pub report_to: String,
 }
 
 impl NotificationDetails {
@@ -43,22 +44,40 @@ impl From<NotificationDetails> for NotificationPayload {
             DayStartFullyAbsent => Self {
                 topic: value.topic,
                 title: format!("{} Absent", value.teacher_name),
-                body: Some(format!("{} is absent today. Please sign into upper caf.", value.teacher_name)),
+                body: Some(format!(
+                    "{} is absent today. Please report to {}.",
+                    value.teacher_name,
+                    value.report_to,
+                )),
             },
             DayStartPartiallyAbsent { periods } => Self {
                 topic: value.topic,
                 title: format!("{} Partially Absent", value.teacher_name),
-                body: Some(format!("{} is absent today during period(s) {}. Please sign into upper caf.", value.teacher_name, periods)),
+                body: Some(format!(
+                    "{} is absent today during period(s) {}. Please report to {}.",
+                    value.teacher_name,
+                    periods,
+                    value.report_to,
+                )),
             },
             UpdateTeacherFullyAbsent => Self {
                 topic: value.topic,
                 title: format!("{} Absent", value.teacher_name),
-                body: Some(format!("{} will now be absent for the rest of the day. Please sign into upper caf.", value.teacher_name)),
+                body: Some(format!(
+                    "{} will now be absent for the rest of the day. Please report to {}.",
+                    value.teacher_name,
+                    value.report_to,
+                )),
             },
             UpdateTeacherPartiallyAbsent { periods } => Self {
                 topic: value.topic,
                 title: format!("{} Partially Absent", value.teacher_name),
-                body: Some(format!("{} will not be here for period(s) {}. Please sign into upper caf.", value.teacher_name, periods)),
+                body: Some(format!(
+                    "{} will not be here for period(s) {}. Please report to {}.",
+                    value.teacher_name,
+                    periods,
+                    value.report_to,
+                )),
             },
             UpdateTeacherPresent => Self {
                 topic: value.topic,

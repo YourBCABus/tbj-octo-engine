@@ -17,7 +17,8 @@ use crate::gql::teachers::{
     TeachersTeachersAbsence,
     Variables as TeachersVariables,
 };
-use crate::gql::{fetch_teacher_periods, fetch_teachers};
+use crate::gql::report_to::Variables as ReportToVariables;
+use crate::gql::{fetch_report_to, fetch_teacher_periods, fetch_teachers};
 
 
 /// The number of seconds ahead of time to look when determining the
@@ -55,6 +56,9 @@ pub async fn status_loop() -> Result<(), Box<dyn Error + Send>> {
 
         println!("Iteration of notification loop at [{:5}]", chrono::Utc::now().time().num_seconds_from_midnight() as f64);
         let current_period = get_current_state().await;
+        let Some(curr_report_to) = get_curr_report_to().await else {
+            continue;
+        };
 
         match (current_period, prior_state.clone()) {
             // From during the day to during the day
@@ -64,7 +68,7 @@ pub async fn status_loop() -> Result<(), Box<dyn Error + Send>> {
                     continue;
                 }
 
-                for notif in get_midday_notifs(&prior, &current).await {
+                for notif in get_midday_notifs(&prior, &current, curr_report_to).await {
                     if let Err(e) = issue_notif(notif).await {
                         eprintln!("Error issuing notification: {}", e);
                     }
@@ -78,7 +82,7 @@ pub async fn status_loop() -> Result<(), Box<dyn Error + Send>> {
             (Some(ret), None) => {
                 println!("New day has likely started...");
 
-                for notif in get_begin_day_notifs(&ret).await {
+                for notif in get_begin_day_notifs(&ret, curr_report_to).await {
                     if let Err(e) = issue_notif(notif).await {
                         eprintln!("Error issuing notification: {}", e);
                     }
@@ -95,6 +99,18 @@ pub async fn status_loop() -> Result<(), Box<dyn Error + Send>> {
         }
 
     }
+}
+
+async fn get_curr_report_to() -> Option<String> {
+    let data = match fetch_report_to(ReportToVariables).await {
+        Ok(data) => data,
+        Err(e) => {
+            eprintln!("Error fetching current `report_to`: {:#?}", e);
+            return None;
+        }   
+    };
+
+    Some(data.report_to)
 }
 
 async fn get_all_periods() -> Option<Vec<PeriodTeacherPeriods>> {
@@ -197,10 +213,10 @@ async fn get_current_state() -> Option<PeriodState> {
 
 
 
-
 pub async fn get_midday_notifs(
     prior: &PeriodState,
     current: &PeriodState,
+    report_to: String,
 ) -> impl Iterator<Item = NotificationDetails> {
     let Some(all_periods) = get_all_periods().await else {
         return vec![].into_iter();
@@ -241,6 +257,7 @@ pub async fn get_midday_notifs(
                 &id.to_string(),
             ),
             notification_type,
+            report_to: report_to.clone(),
         });
         teacher_notifs.insert(teacher_id, notifs);
     }
@@ -262,6 +279,7 @@ pub async fn get_midday_notifs(
                 &id.to_string(),
             ),
             notification_type: NotificationType::ReminderTeacherBackIn,
+            report_to: report_to.clone(),
         });
         teacher_notifs.insert(teacher.id, notifs);
     }
@@ -271,7 +289,7 @@ pub async fn get_midday_notifs(
     notifs.into_iter()
 }
 
-pub async fn get_begin_day_notifs(current: &PeriodState) -> impl Iterator<Item = NotificationDetails> {
+pub async fn get_begin_day_notifs(current: &PeriodState, report_to: String) -> impl Iterator<Item = NotificationDetails> {
     let Some(all_periods) = get_all_periods().await else {
         return vec![].into_iter();
     };
@@ -304,6 +322,7 @@ pub async fn get_begin_day_notifs(current: &PeriodState) -> impl Iterator<Item =
                 &id.to_string(),
             ),
             notification_type,
+            report_to: report_to.clone(),
         });
         teacher_notifs.insert(teacher_id, notifs);
     }

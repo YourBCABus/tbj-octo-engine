@@ -1,0 +1,209 @@
+
+
+enum FormatStyle {
+	FIRST_LAST
+	FIRST_MIDDLE_LAST
+	HONORIFIC_LAST
+	HONORIFIC_FIRST_LAST
+	HONORIFIC_FIRST_MIDDLE_LAST
+}
+
+scalar GraphQlHonorific
+
+input GraphQlMiddleName {
+	name: String!
+	vis: Boolean!
+}
+
+input GraphQlPronounSet {
+	sub: String!
+	obj: String!
+	posAdj: String!
+	posPro: String!
+	refx: String!
+	grammPlu: Boolean!
+}
+
+input GraphQlTeacherName {
+	honorific: GraphQlHonorific!
+	first: String!
+	last: String!
+	middle: [GraphQlMiddleName!]!
+}
+
+
+
+type MutationRoot {
+	addTeacher(name: GraphQlTeacherName!, pronouns: GraphQlPronounSet!): Teacher!
+	updateTeacherName(id: UUID!, name: GraphQlTeacherName!): Teacher!
+	updateTeacherPronouns(id: UUID!, pronouns: GraphQlPronounSet!): Teacher!
+	updateTeacherAbsence(id: UUID!, periods: [UUID!]!, fullyAbsent: Boolean!): Teacher!
+	addTeacherAssociatedOauth(id: UUID!, provider: String!, sub: String!): Teacher!
+	removeTeacherAssociatedOauth(id: UUID!, provider: String!): Teacher!
+	setTeacherFutureAbsence(start: NaiveDate!, end: NaiveDate, id: UUID!, periods: [UUID!]!, fullyAbsent: Boolean!, comment: String): Boolean!
+	clearTeacherFutureAbsence(start: NaiveDate!, end: NaiveDate, id: UUID!): Boolean!
+	syncAndFlushFutures: Boolean!
+	setSpreadsheetId(id: String!): Boolean!
+	setReportTo(reportTo: String!): Boolean!
+	addPeriod(name: String!, defaultTime: TimeRangeInput!): Period!
+	updatePeriodName(id: UUID!, name: String!): Period!
+	updatePeriodTime(id: UUID!, time: TimeRangeInput!): Period!
+	setPeriodTempTime(id: UUID!, tempTime: TimeRangeInput!): Period!
+	clearPeriodTempTime(id: UUID!): Period!
+	clearAllTempTimes: Boolean!
+}
+
+"""
+ISO 8601 calendar date without timezone.
+Format: %Y-%m-%d
+
+# Examples
+
+* `1994-11-13`
+* `2000-02-24`
+"""
+scalar NaiveDate
+
+type PackedAbsenceState {
+	teacherId: UUID!
+	full: Boolean!
+	fully: Boolean!
+	fullyAbsent: Boolean!
+	periods: [Period!]!
+	date: NaiveDate!
+	comments: String
+}
+
+type Period {
+	id: UUID!
+	name: String!
+	defaultTimeRange: TimeRange!
+	timeRange: TimeRange!
+	teachersAbsent: [Teacher!]!
+}
+
+type Privileges {
+	admin: Boolean!
+	secretary: Boolean!
+}
+
+type PronounSet {
+	sub: String!
+	subject: String!
+	obj: String!
+	object: String!
+	posAdj: String!
+	possAdjective: String!
+	posPro: String!
+	possPronoun: String!
+	refx: String!
+	reflexive: String!
+	grammPlu: Boolean!
+	grammaticallyPlural: Boolean!
+	setStr: String!
+}
+
+type QueryRoot {
+	getTeacher(
+		"""
+		Id of teacher
+		"""
+		id: UUID!
+	): Teacher!
+	allTeachers: [Teacher!]!
+	getTeacherByOauth(
+		"""
+		Provider of OAuth
+		"""
+		provider: String!,
+		"""
+		Sub of OAuth
+		"""
+		sub: String!
+	): Teacher!
+	getTeacherFutures(		id: UUID!,		start: NaiveDate!,		end: NaiveDate!,
+		"""
+		Provider of OAuth
+		"""
+		provider: String!,
+		"""
+		Sub of OAuth
+		"""
+		sub: String!
+	): [PackedAbsenceState!]!
+	getAllTeacherFutures(		start: NaiveDate!,		end: NaiveDate!,
+		"""
+		Provider of OAuth
+		"""
+		provider: String!,
+		"""
+		Sub of OAuth
+		"""
+		sub: String!
+	): [TeacherAbsenceStateList!]!
+	allPeriods: [Period!]!
+	getPrivs(
+		"""
+		Provider of OAuth
+		"""
+		provider: String!,
+		"""
+		Sub of OAuth
+		"""
+		sub: String!
+	): Privileges!
+	currSpreadsheetId: String!
+	currReportTo: String!
+}
+
+
+type Teacher {
+	id: UUID!
+	pronouns: PronounSet!
+	name: TeacherName!
+	absence: [Period!]!
+	fullyAbsent: Boolean!
+}
+
+type TeacherAbsenceStateList {
+	id: UUID!
+	absences: [PackedAbsenceState!]!
+}
+
+type TeacherName {
+	honorific: String!
+	first: String!
+	middles: [String!]!
+	last: String!
+	formatted(formatStyle: FormatStyle!): String!
+	full: String!
+	firstLast: String!
+	normal: String!
+}
+
+type TimeRange {
+	start: Float!
+	end: Float!
+}
+
+input TimeRangeInput {
+	start: Float!
+	end: Float!
+}
+
+"""
+A UUID is a unique 128-bit number, stored as 16 octets. UUIDs are parsed as
+Strings within GraphQL. UUIDs are used to assign unique identifiers to
+entities without requiring a central allocating authority.
+
+# References
+
+* [Wikipedia: Universally Unique Identifier](http://en.wikipedia.org/wiki/Universally_unique_identifier)
+* [RFC4122: A Universally Unique IDentifier (UUID) URN Namespace](http://tools.ietf.org/html/rfc4122)
+"""
+scalar UUID
+
+schema {
+	query: QueryRoot
+	mutation: MutationRoot
+}

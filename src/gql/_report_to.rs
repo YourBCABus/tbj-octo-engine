@@ -1,27 +1,19 @@
 use graphql_client::{GraphQLQuery, Response};
 
-use self::teachers::ResponseData;
-
-// The paths are relative to the directory where your `Cargo.toml` is located.
-// Both json and the GraphQL schema language are supported as sources for the schema
-
-/// This makes the `GraphQLQuery` derive happy
-#[allow(clippy::upper_case_acronyms)]
-type UUID = uuid::Uuid;
+use self::report_to::ResponseData;
 
 #[derive(GraphQLQuery)]
 #[graphql(
     schema_path = "src/gql/definitions/schema.graphql",
-    query_path = "src/gql/definitions/teachers.graphql",
+    query_path = "src/gql/definitions/report_to.graphql",
     response_derives = "Debug,Clone,PartialEq"
 )]
-
-pub struct Teachers;
+pub struct ReportTo;
 
 // TODO: Give this a better error variant
-pub async fn fetch_teachers(variables: teachers::Variables) -> Result<ResponseData, ()> {
+pub async fn fetch_report_to(variables: report_to::Variables) -> Result<ResponseData, ()> {
     // this is the important line
-    let request_body = Teachers::build_query(variables);
+    let request_body = ReportTo::build_query(variables);
 
     let client = reqwest::Client::new();
     let res = match client.post(dotenvy::var("GRAPHQL_ENDPOINT_URL").unwrap()).json(&request_body).send().await {
@@ -31,7 +23,7 @@ pub async fn fetch_teachers(variables: teachers::Variables) -> Result<ResponseDa
             return Err(());
         }
     };
-    let response_body: Response<teachers::ResponseData> = match res.json().await {
+    let response_body: Response<ResponseData> = match res.json().await {
         Ok(body) => body,
         Err(e) => {
             println!("Error parsing response body: {}", e);

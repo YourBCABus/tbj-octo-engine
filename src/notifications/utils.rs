@@ -18,11 +18,11 @@ impl PeriodList {
                 }
             } else if let Some((start, end)) = curr_range {
                 if end - start == 1 {
-                    groups.push(PeriodGroup::SinglePeriod(periods[start].0.trim_start_matches("Period ").to_string()));
+                    groups.push(PeriodGroup::SinglePeriod(trim_period_text(periods[start].0).to_string()));
                 } else {
                     groups.push(PeriodGroup::PeriodRange {
-                        start: periods[start].0.trim_start_matches("Period ").to_string(),
-                        end: periods[end - 1].0.trim_start_matches("Period ").to_string(),
+                        start: trim_period_text(periods[start].0).to_string(),
+                        end: trim_period_text(periods[end - 1].0).to_string(),
                     });
                 }
                 curr_range = None;
@@ -39,6 +39,13 @@ impl Display for PeriodList {
     }
 }
 
+fn trim_period_text(period_name: &str) -> &str {
+    period_name
+        .trim()
+        .trim_start_matches("Period").trim_start_matches("period")
+        .trim_end_matches("Period").trim_end_matches("period")
+        .trim()
+}
 
 
 #[derive(Debug, Clone, PartialEq, Eq)]

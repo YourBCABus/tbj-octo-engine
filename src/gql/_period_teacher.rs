@@ -8,7 +8,7 @@ type UUID = uuid::Uuid;
 
 #[derive(GraphQLQuery)]
 #[graphql(
-    schema_path = "src/gql/definitions/schema.json",
+    schema_path = "src/gql/definitions/schema.graphql",
     query_path = "src/gql/definitions/period_teacher.graphql",
     response_derives = "Debug,Clone,PartialEq"
 )]
