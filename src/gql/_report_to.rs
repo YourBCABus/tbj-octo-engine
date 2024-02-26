@@ -1,6 +1,10 @@
 use graphql_client::{GraphQLQuery, Response};
 
+use crate::env::GRAPHQL_ENDPOINT_URL;
+
 use self::report_to::ResponseData;
+
+use super::post_req_auth;
 
 #[derive(GraphQLQuery)]
 #[graphql(
@@ -15,8 +19,7 @@ pub async fn fetch_report_to(variables: report_to::Variables) -> Result<Response
     // this is the important line
     let request_body = ReportTo::build_query(variables);
 
-    let client = reqwest::Client::new();
-    let res = match client.post(dotenvy::var("GRAPHQL_ENDPOINT_URL").unwrap()).json(&request_body).send().await {
+    let res = match post_req_auth(&GRAPHQL_ENDPOINT_URL).json(&request_body).send().await {
         Ok(res) => res,
         Err(e) => {
             println!("Error sending request: {}", e);

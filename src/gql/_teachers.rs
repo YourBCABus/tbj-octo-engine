@@ -1,6 +1,10 @@
 use graphql_client::{GraphQLQuery, Response};
 
+use crate::env::GRAPHQL_ENDPOINT_URL;
+
 use self::teachers::ResponseData;
+
+use super::post_req_auth;
 
 // The paths are relative to the directory where your `Cargo.toml` is located.
 // Both json and the GraphQL schema language are supported as sources for the schema
@@ -23,8 +27,7 @@ pub async fn fetch_teachers(variables: teachers::Variables) -> Result<ResponseDa
     // this is the important line
     let request_body = Teachers::build_query(variables);
 
-    let client = reqwest::Client::new();
-    let res = match client.post(dotenvy::var("GRAPHQL_ENDPOINT_URL").unwrap()).json(&request_body).send().await {
+    let res = match post_req_auth(&GRAPHQL_ENDPOINT_URL).json(&request_body).send().await {
         Ok(res) => res,
         Err(e) => {
             println!("Error sending request: {}", e);

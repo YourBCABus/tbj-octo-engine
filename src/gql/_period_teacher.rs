@@ -1,6 +1,10 @@
 use graphql_client::{GraphQLQuery, Response};
 
+use crate::env::GRAPHQL_ENDPOINT_URL;
+
 use self::period_teacher::ResponseData;
+
+use super::post_req_auth;
 
 /// This makes the `GraphQLQuery` derive happy
 #[allow(clippy::upper_case_acronyms)]
@@ -20,8 +24,7 @@ pub async fn fetch_teacher_periods(variables: period_teacher::Variables) -> Resu
     // this is the important line
     let request_body = PeriodTeacher::build_query(variables);
 
-    let client = reqwest::Client::new();
-    let res = match client.post(dotenvy::var("GRAPHQL_ENDPOINT_URL").unwrap()).json(&request_body).send().await {
+    let res = match post_req_auth(&GRAPHQL_ENDPOINT_URL).json(&request_body).send().await {
         Ok(res) => res,
         Err(e) => {
             println!("Error sending request: {}", e);

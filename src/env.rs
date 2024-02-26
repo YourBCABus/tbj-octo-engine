@@ -18,6 +18,19 @@ lazy_static! {
 
         dotenvy::var("DISCORD_WEBHOOK_URL").unwrap()
     };
+
+
+    pub static ref CLIENT_ID: String = {
+        dotenvy::dotenv().unwrap();
+
+        dotenvy::var("CLIENT_ID").unwrap()
+    };
+
+    pub static ref CLIENT_SECRET: String = {
+        dotenvy::dotenv().unwrap();
+
+        dotenvy::var("CLIENT_SECRET").unwrap()
+    };
 }
 
 pub fn ensure_env() {
@@ -26,4 +39,6 @@ pub fn ensure_env() {
     black_box(&FIREBASE_API_KEY);
     black_box(&GRAPHQL_ENDPOINT_URL);
     black_box(&DISCORD_WEBHOOK_URL);
+    black_box(&CLIENT_ID);
+    black_box(&CLIENT_SECRET);
 }
