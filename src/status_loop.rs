@@ -13,10 +13,7 @@ use crate::gql::period_teacher::{
     PeriodTeacherPeriods,
     Variables as PeriodTeacherVariables,
 };
-use crate::gql::teachers::{
-    TeachersTeachersAbsence,
-    Variables as TeachersVariables,
-};
+use crate::gql::teachers::Variables as TeachersVariables;
 use crate::gql::report_to::Variables as ReportToVariables;
 use crate::gql::{fetch_report_to, fetch_teacher_periods, fetch_teachers};
 
@@ -38,7 +35,8 @@ pub enum Absence {
 pub struct TeacherState {
     pub name: String,
     pub absence: Absence,
-    pub periods: Vec<TeachersTeachersAbsence>,
+    // pub periods: Vec<TeachersTeachersAbsence>,
+    pub comments: Option<String>,
 }
 
 #[derive(Debug, Clone)]
@@ -173,7 +171,7 @@ async fn get_current_teachers() -> Option<HashMap<uuid::Uuid, TeacherState>> {
             t.id,
             TeacherState {
                 name: t.name.name,
-                periods: t.absence.clone(),
+                // periods: t.absence.clone(),
                 absence: {
                     if t.fully_absent {
                         Absence::FullyAbsent
@@ -188,6 +186,7 @@ async fn get_current_teachers() -> Option<HashMap<uuid::Uuid, TeacherState>> {
                         Absence::PartiallyAbsent { periods }
                     }
                 },
+                comments: t.comments,
             },
         ))
         .collect();
@@ -258,6 +257,7 @@ pub async fn get_midday_notifs(
             ),
             notification_type,
             report_to: report_to.clone(),
+            comments: teacher.comments.clone(),
         });
         teacher_notifs.insert(teacher_id, notifs);
     }
@@ -280,6 +280,7 @@ pub async fn get_midday_notifs(
             ),
             notification_type: NotificationType::ReminderTeacherBackIn,
             report_to: report_to.clone(),
+            comments: teacher.comments.clone(),
         });
         teacher_notifs.insert(teacher.id, notifs);
     }
@@ -323,6 +324,7 @@ pub async fn get_begin_day_notifs(current: &PeriodState, report_to: String) -> i
             ),
             notification_type,
             report_to: report_to.clone(),
+            comments: teacher.comments.clone(),
         });
         teacher_notifs.insert(teacher_id, notifs);
     }

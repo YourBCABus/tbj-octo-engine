@@ -5,6 +5,7 @@ query Teachers {
       name: formatted(formatStyle: HONORIFIC_LAST)
     }
     fullyAbsent
+    comments
     absence {
       id
       name

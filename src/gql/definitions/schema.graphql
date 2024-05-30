@@ -1,3 +1,26 @@
+type AttribMutationRoot {
+	raw: RawAttribMutationRoot!
+	setSupportFormUrl(newValue: JSON!): Attribs!
+}
+
+type Attribs {
+	supportFormUrl: String
+	raw: RawAttribs!
+}
+
+
+type BucketEntry {
+	value: Float!
+	min: Float!
+	max: Float!
+}
+
+type Buckets {
+	values: [Float!]!
+	withMaxOf(max: Float!): Buckets!
+	asEntries: [BucketEntry!]!
+	graph(maxWidth: Int!): String!
+}
 
 
 enum FormatStyle {
@@ -33,11 +56,22 @@ input GraphQlTeacherName {
 
 
 
+"""
+A scalar that can represent any JSON value.
+"""
+scalar JSON
+
+"""
+A scalar that can represent any JSON Object value.
+"""
+scalar JSONObject
+
 type MutationRoot {
 	addTeacher(name: GraphQlTeacherName!, pronouns: GraphQlPronounSet!): Teacher!
 	updateTeacherName(id: UUID!, name: GraphQlTeacherName!): Teacher!
 	updateTeacherPronouns(id: UUID!, pronouns: GraphQlPronounSet!): Teacher!
 	updateTeacherAbsence(id: UUID!, periods: [UUID!]!, fullyAbsent: Boolean!): Teacher!
+	updateTeacherComments(id: UUID!, comments: String): Teacher!
 	addTeacherAssociatedOauth(id: UUID!, provider: String!, sub: String!): Teacher!
 	removeTeacherAssociatedOauth(id: UUID!, provider: String!): Teacher!
 	setTeacherFutureAbsence(start: NaiveDate!, end: NaiveDate, id: UUID!, periods: [UUID!]!, fullyAbsent: Boolean!, comment: String): Boolean!
@@ -46,11 +80,16 @@ type MutationRoot {
 	setSpreadsheetId(id: String!): Boolean!
 	setReportTo(reportTo: String!): Boolean!
 	addPeriod(name: String!, defaultTime: TimeRangeInput!): Period!
+	addTempPeriod(name: String!, defaultTime: TimeRangeInput!): Period!
 	updatePeriodName(id: UUID!, name: String!): Period!
 	updatePeriodTime(id: UUID!, time: TimeRangeInput!): Period!
 	setPeriodTempTime(id: UUID!, tempTime: TimeRangeInput!): Period!
 	clearPeriodTempTime(id: UUID!): Period!
 	clearAllTempTimes: Boolean!
+	clearAllTempPeriods: Boolean!
+	clearMetrics: String!
+	attribs: AttribMutationRoot!
+	deletePeriod(id: UUID!): Int!
 }
 
 """
@@ -69,9 +108,420 @@ type PackedAbsenceState {
 	full: Boolean!
 	fully: Boolean!
 	fullyAbsent: Boolean!
-	periods: [Period!]!
 	date: NaiveDate!
 	comments: String
+	periods: [Period!]!
+}
+
+type Percentiles {
+	"""
+	A list of all percentiles of e2e response times (in ms)
+	"""
+	arr: [Float!]!
+	"""
+	Percentile 0 of e2e response times (in ms)
+	"""
+	p0: Float!
+	"""
+	Percentile 1 of e2e response times (in ms)
+	"""
+	p1: Float!
+	"""
+	Percentile 2 of e2e response times (in ms)
+	"""
+	p2: Float!
+	"""
+	Percentile 3 of e2e response times (in ms)
+	"""
+	p3: Float!
+	"""
+	Percentile 4 of e2e response times (in ms)
+	"""
+	p4: Float!
+	"""
+	Percentile 5 of e2e response times (in ms)
+	"""
+	p5: Float!
+	"""
+	Percentile 6 of e2e response times (in ms)
+	"""
+	p6: Float!
+	"""
+	Percentile 7 of e2e response times (in ms)
+	"""
+	p7: Float!
+	"""
+	Percentile 8 of e2e response times (in ms)
+	"""
+	p8: Float!
+	"""
+	Percentile 9 of e2e response times (in ms)
+	"""
+	p9: Float!
+	"""
+	Percentile 10 of e2e response times (in ms)
+	"""
+	p10: Float!
+	"""
+	Percentile 11 of e2e response times (in ms)
+	"""
+	p11: Float!
+	"""
+	Percentile 12 of e2e response times (in ms)
+	"""
+	p12: Float!
+	"""
+	Percentile 13 of e2e response times (in ms)
+	"""
+	p13: Float!
+	"""
+	Percentile 14 of e2e response times (in ms)
+	"""
+	p14: Float!
+	"""
+	Percentile 15 of e2e response times (in ms)
+	"""
+	p15: Float!
+	"""
+	Percentile 16 of e2e response times (in ms)
+	"""
+	p16: Float!
+	"""
+	Percentile 17 of e2e response times (in ms)
+	"""
+	p17: Float!
+	"""
+	Percentile 18 of e2e response times (in ms)
+	"""
+	p18: Float!
+	"""
+	Percentile 19 of e2e response times (in ms)
+	"""
+	p19: Float!
+	"""
+	Percentile 20 of e2e response times (in ms)
+	"""
+	p20: Float!
+	"""
+	Percentile 21 of e2e response times (in ms)
+	"""
+	p21: Float!
+	"""
+	Percentile 22 of e2e response times (in ms)
+	"""
+	p22: Float!
+	"""
+	Percentile 23 of e2e response times (in ms)
+	"""
+	p23: Float!
+	"""
+	Percentile 24 of e2e response times (in ms)
+	"""
+	p24: Float!
+	"""
+	Percentile 25 of e2e response times (in ms)
+	"""
+	p25: Float!
+	"""
+	Percentile 26 of e2e response times (in ms)
+	"""
+	p26: Float!
+	"""
+	Percentile 27 of e2e response times (in ms)
+	"""
+	p27: Float!
+	"""
+	Percentile 28 of e2e response times (in ms)
+	"""
+	p28: Float!
+	"""
+	Percentile 29 of e2e response times (in ms)
+	"""
+	p29: Float!
+	"""
+	Percentile 30 of e2e response times (in ms)
+	"""
+	p30: Float!
+	"""
+	Percentile 31 of e2e response times (in ms)
+	"""
+	p31: Float!
+	"""
+	Percentile 32 of e2e response times (in ms)
+	"""
+	p32: Float!
+	"""
+	Percentile 33 of e2e response times (in ms)
+	"""
+	p33: Float!
+	"""
+	Percentile 34 of e2e response times (in ms)
+	"""
+	p34: Float!
+	"""
+	Percentile 35 of e2e response times (in ms)
+	"""
+	p35: Float!
+	"""
+	Percentile 36 of e2e response times (in ms)
+	"""
+	p36: Float!
+	"""
+	Percentile 37 of e2e response times (in ms)
+	"""
+	p37: Float!
+	"""
+	Percentile 38 of e2e response times (in ms)
+	"""
+	p38: Float!
+	"""
+	Percentile 39 of e2e response times (in ms)
+	"""
+	p39: Float!
+	"""
+	Percentile 40 of e2e response times (in ms)
+	"""
+	p40: Float!
+	"""
+	Percentile 41 of e2e response times (in ms)
+	"""
+	p41: Float!
+	"""
+	Percentile 42 of e2e response times (in ms)
+	"""
+	p42: Float!
+	"""
+	Percentile 43 of e2e response times (in ms)
+	"""
+	p43: Float!
+	"""
+	Percentile 44 of e2e response times (in ms)
+	"""
+	p44: Float!
+	"""
+	Percentile 45 of e2e response times (in ms)
+	"""
+	p45: Float!
+	"""
+	Percentile 46 of e2e response times (in ms)
+	"""
+	p46: Float!
+	"""
+	Percentile 47 of e2e response times (in ms)
+	"""
+	p47: Float!
+	"""
+	Percentile 48 of e2e response times (in ms)
+	"""
+	p48: Float!
+	"""
+	Percentile 49 of e2e response times (in ms)
+	"""
+	p49: Float!
+	"""
+	Percentile 50 of e2e response times (in ms)
+	"""
+	p50: Float!
+	"""
+	Percentile 51 of e2e response times (in ms)
+	"""
+	p51: Float!
+	"""
+	Percentile 52 of e2e response times (in ms)
+	"""
+	p52: Float!
+	"""
+	Percentile 53 of e2e response times (in ms)
+	"""
+	p53: Float!
+	"""
+	Percentile 54 of e2e response times (in ms)
+	"""
+	p54: Float!
+	"""
+	Percentile 55 of e2e response times (in ms)
+	"""
+	p55: Float!
+	"""
+	Percentile 56 of e2e response times (in ms)
+	"""
+	p56: Float!
+	"""
+	Percentile 57 of e2e response times (in ms)
+	"""
+	p57: Float!
+	"""
+	Percentile 58 of e2e response times (in ms)
+	"""
+	p58: Float!
+	"""
+	Percentile 59 of e2e response times (in ms)
+	"""
+	p59: Float!
+	"""
+	Percentile 60 of e2e response times (in ms)
+	"""
+	p60: Float!
+	"""
+	Percentile 61 of e2e response times (in ms)
+	"""
+	p61: Float!
+	"""
+	Percentile 62 of e2e response times (in ms)
+	"""
+	p62: Float!
+	"""
+	Percentile 63 of e2e response times (in ms)
+	"""
+	p63: Float!
+	"""
+	Percentile 64 of e2e response times (in ms)
+	"""
+	p64: Float!
+	"""
+	Percentile 65 of e2e response times (in ms)
+	"""
+	p65: Float!
+	"""
+	Percentile 66 of e2e response times (in ms)
+	"""
+	p66: Float!
+	"""
+	Percentile 67 of e2e response times (in ms)
+	"""
+	p67: Float!
+	"""
+	Percentile 68 of e2e response times (in ms)
+	"""
+	p68: Float!
+	"""
+	Percentile 69 of e2e response times (in ms)
+	"""
+	p69: Float!
+	"""
+	Percentile 70 of e2e response times (in ms)
+	"""
+	p70: Float!
+	"""
+	Percentile 71 of e2e response times (in ms)
+	"""
+	p71: Float!
+	"""
+	Percentile 72 of e2e response times (in ms)
+	"""
+	p72: Float!
+	"""
+	Percentile 73 of e2e response times (in ms)
+	"""
+	p73: Float!
+	"""
+	Percentile 74 of e2e response times (in ms)
+	"""
+	p74: Float!
+	"""
+	Percentile 75 of e2e response times (in ms)
+	"""
+	p75: Float!
+	"""
+	Percentile 76 of e2e response times (in ms)
+	"""
+	p76: Float!
+	"""
+	Percentile 77 of e2e response times (in ms)
+	"""
+	p77: Float!
+	"""
+	Percentile 78 of e2e response times (in ms)
+	"""
+	p78: Float!
+	"""
+	Percentile 79 of e2e response times (in ms)
+	"""
+	p79: Float!
+	"""
+	Percentile 80 of e2e response times (in ms)
+	"""
+	p80: Float!
+	"""
+	Percentile 81 of e2e response times (in ms)
+	"""
+	p81: Float!
+	"""
+	Percentile 82 of e2e response times (in ms)
+	"""
+	p82: Float!
+	"""
+	Percentile 83 of e2e response times (in ms)
+	"""
+	p83: Float!
+	"""
+	Percentile 84 of e2e response times (in ms)
+	"""
+	p84: Float!
+	"""
+	Percentile 85 of e2e response times (in ms)
+	"""
+	p85: Float!
+	"""
+	Percentile 86 of e2e response times (in ms)
+	"""
+	p86: Float!
+	"""
+	Percentile 87 of e2e response times (in ms)
+	"""
+	p87: Float!
+	"""
+	Percentile 88 of e2e response times (in ms)
+	"""
+	p88: Float!
+	"""
+	Percentile 89 of e2e response times (in ms)
+	"""
+	p89: Float!
+	"""
+	Percentile 90 of e2e response times (in ms)
+	"""
+	p90: Float!
+	"""
+	Percentile 91 of e2e response times (in ms)
+	"""
+	p91: Float!
+	"""
+	Percentile 92 of e2e response times (in ms)
+	"""
+	p92: Float!
+	"""
+	Percentile 93 of e2e response times (in ms)
+	"""
+	p93: Float!
+	"""
+	Percentile 94 of e2e response times (in ms)
+	"""
+	p94: Float!
+	"""
+	Percentile 95 of e2e response times (in ms)
+	"""
+	p95: Float!
+	"""
+	Percentile 96 of e2e response times (in ms)
+	"""
+	p96: Float!
+	"""
+	Percentile 97 of e2e response times (in ms)
+	"""
+	p97: Float!
+	"""
+	Percentile 98 of e2e response times (in ms)
+	"""
+	p98: Float!
+	"""
+	Percentile 99 of e2e response times (in ms)
+	"""
+	p99: Float!
+	"""
+	Percentile 100 of e2e response times (in ms)
+	"""
+	p100: Float!
 }
 
 type Period {
@@ -154,6 +604,58 @@ type QueryRoot {
 	): Privileges!
 	currSpreadsheetId: String!
 	currReportTo: String!
+	getMetrics: SparseMetricsView!
+	attribs: Attribs!
+}
+
+type RawAttribMutationRoot {
+	setKey(key: String!, newValue: JSON!): Attribs!
+	clearKey(key: String!): Attribs!
+	setAttribs(attribs: JSONObject!): Attribs!
+}
+
+type RawAttribs {
+	getKey(key: String!): JSON!
+	getAll: JSONObject!
+}
+
+type SparseMetricsView {
+	"""
+	Mean e2e response time (in ms)
+	"""
+	mean: Float!
+	"""
+	Median e2e response time (in ms)
+	"""
+	median: Float!
+	"""
+	Mode e2e response time (in ms)
+	"""
+	mode: Float!
+	"""
+	Minimum e2e response time (in ms)
+	"""
+	min: Float!
+	"""
+	Maximum e2e response time (in ms)
+	"""
+	max: Float!
+	"""
+	Standard Deviation of e2e response times (in ms)
+	"""
+	stdDev: Float!
+	"""
+	Mean Absolute Deviation of e2e response times (in ms)
+	"""
+	mad: Float!
+	"""
+	Percentile marks of e2e response times
+	"""
+	percentiles: Percentiles!
+	"""
+	Buckets (min, max, and step) of response time
+	"""
+	buckets(start: Float!, end: Float!, step: Float!): Buckets!
 }
 
 
@@ -163,6 +665,7 @@ type Teacher {
 	name: TeacherName!
 	absence: [Period!]!
 	fullyAbsent: Boolean!
+	comments: String
 }
 
 type TeacherAbsenceStateList {
@@ -203,6 +706,8 @@ entities without requiring a central allocating authority.
 """
 scalar UUID
 
+directive @include(if: Boolean!) on FIELD | FRAGMENT_SPREAD | INLINE_FRAGMENT
+directive @skip(if: Boolean!) on FIELD | FRAGMENT_SPREAD | INLINE_FRAGMENT
 schema {
 	query: QueryRoot
 	mutation: MutationRoot

@@ -1,4 +1,5 @@
 use super::NotificationType;
+use std::fmt::Write;
 
 #[derive(Debug, Clone)]
 pub struct Topic(String);
@@ -21,6 +22,7 @@ pub struct NotificationDetails {
     pub topic: Topic,
     pub notification_type: NotificationType,
     pub report_to: String,
+    pub comments: Option<String>,
 }
 
 impl NotificationDetails {
@@ -40,55 +42,36 @@ impl From<NotificationDetails> for NotificationPayload {
     fn from(value: NotificationDetails) -> Self {
         use NotificationType::*;
 
-        match value.notification_type {
-            DayStartFullyAbsent => Self {
-                topic: value.topic,
-                title: format!("{} Absent", value.teacher_name),
-                body: Some(format!(
-                    "{} is absent today. Please report to {}.",
-                    value.teacher_name,
-                    value.report_to,
-                )),
-            },
-            DayStartPartiallyAbsent { periods } => Self {
-                topic: value.topic,
-                title: format!("{} Partially Absent", value.teacher_name),
-                body: Some(format!(
-                    "{} is absent today during period(s) {}. Please report to {}.",
-                    value.teacher_name,
-                    periods,
-                    value.report_to,
-                )),
-            },
-            UpdateTeacherFullyAbsent => Self {
-                topic: value.topic,
-                title: format!("{} Absent", value.teacher_name),
-                body: Some(format!(
-                    "{} will now be absent for the rest of the day. Please report to {}.",
-                    value.teacher_name,
-                    value.report_to,
-                )),
-            },
-            UpdateTeacherPartiallyAbsent { periods } => Self {
-                topic: value.topic,
-                title: format!("{} Partially Absent", value.teacher_name),
-                body: Some(format!(
-                    "{} will not be here for period(s) {}. Please report to {}.",
-                    value.teacher_name,
-                    periods,
-                    value.report_to,
-                )),
-            },
-            UpdateTeacherPresent => Self {
-                topic: value.topic,
-                title: format!("{} is Present", value.teacher_name),
-                body: Some(format!("{} is back in school. Please report to class.", value.teacher_name)),
-            },
-            ReminderTeacherBackIn => Self {
-                topic: value.topic,
-                title: format!("{} is Present", value.teacher_name),
-                body: Some(format!("Reminder: {} is back. Please report to class.", value.teacher_name)),
-            },
+        let mut body = match &value.notification_type {
+            DayStartFullyAbsent => format!("{} is absent today", value.teacher_name),
+            DayStartPartiallyAbsent { periods } => format!("{} is absent today during period(s) {}", value.teacher_name, periods),
+            UpdateTeacherFullyAbsent => format!("{} will now be absent for the rest of the day", value.teacher_name),
+            UpdateTeacherPartiallyAbsent { periods } => format!("{} will not be here for period(s) {}", value.teacher_name, periods),
+            UpdateTeacherPresent => format!("{} is back in school", value.teacher_name),
+            ReminderTeacherBackIn => format!("Reminder: {} is back", value.teacher_name),
+        };
+
+        if matches!(
+            value.notification_type,
+            DayStartFullyAbsent | DayStartPartiallyAbsent { .. } | UpdateTeacherFullyAbsent | UpdateTeacherPartiallyAbsent { .. },
+        ) {
+            if value.comments.is_some() {
+                write!(&mut body, ". YOUR TEACHER HAS LEFT ADDITIONAL COMMENTS IN THE APP. Please also check Schoology.").unwrap();
+            } else {
+                write!(&mut body, ". Check Schoology and report to {}.", value.report_to).unwrap();
+            }
+        }
+
+        let title = match value.notification_type {
+            DayStartFullyAbsent | UpdateTeacherFullyAbsent => format!("{} Absent", value.teacher_name),
+            DayStartPartiallyAbsent { .. } | UpdateTeacherPartiallyAbsent { .. } => format!("{} PARTIALLY Absent", value.teacher_name),
+            UpdateTeacherPresent | ReminderTeacherBackIn => format!("{} is Present", value.teacher_name),
+        };
+
+        Self {
+            topic: value.topic,
+            title,
+            body: Some(body),
         }
     }
 }
