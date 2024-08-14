@@ -1,3 +1,4 @@
+use notifications::setup_client;
 use status_loop::status_loop;
 
 mod env;
@@ -14,7 +15,8 @@ async fn ping() -> impl Responder {
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
-    env::ensure_env();
+    env::ensure_env().await;
+    setup_client("yourbcabus").await;
 
     tokio::spawn(async {
         status_loop().await.unwrap();
@@ -24,8 +26,8 @@ async fn main() -> std::io::Result<()> {
         App::new()
             .service(ping)
     })
-    .bind(("127.0.0.1", 8080))?
-    .run()
-    .await;
+        .bind(("127.0.0.1", 8080))?
+        .run()
+        .await;
 }
 

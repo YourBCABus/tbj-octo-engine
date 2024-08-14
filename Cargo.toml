@@ -12,7 +12,8 @@ tokio = { version = "1", features = ["macros", "rt", "full"] }
 
 graphql_client = "0.13"
 
-fcm = { version = "0.9", features=["rustls"], default-features = false }
+fcm_v1 = { version = "0.3.0", git = "https://github.com/YourBCABus/fcm_v1_rustls.git" }
+
 reqwest = { version = "0.12", features = ["json", "rustls-tls"], default-features = false }
 serde = "1"
 uuid = { version = "1", features = ["v4", "serde"] }

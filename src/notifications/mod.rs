@@ -1,14 +1,17 @@
 mod payload;
 mod utils;
+mod client_manager;
 
 use std::error::Error;
 
-use fcm::{Client, MessageBuilder, NotificationBuilder};
+use client_manager::get_client;
+use fcm_v1::message::{ FcmOptions, Message, Notification };
 
 use self::payload::NotificationPayload;
 
 pub use payload::{ NotificationDetails, Topic };
 pub use utils::PeriodList;
+pub use client_manager::setup_client;
 
 
 
@@ -24,33 +27,45 @@ pub enum NotificationType {
     ReminderTeacherBackIn,
 }
 
-pub async fn notify(payload: &NotificationPayload) -> Result<(), Box<dyn Error + Send>> {
-    // Pull API key loaded at startup
-    let api_key = &crate::env::FIREBASE_API_KEY;
-
-    // Create new Firebase client
-    // NOTE: Maybe put this into a global client to reduce load/API calls. (Not
-    // sure if this would even do that.)   
-    let client = Client::new();
-    
-    let NotificationPayload { topic, title, body } = payload;
-    let topic = topic.to_string();
-
-    let mut builder = NotificationBuilder::new();
-
-    builder.title(title);
-    if let Some(body) = body {
-        builder.body(body);
+impl NotificationType {
+    pub fn analytics_label(&self) -> &'static str {
+        match self {
+            Self::DayStartFullyAbsent => "day_start_fully_absent",
+            Self::DayStartPartiallyAbsent { .. } => "day_start_partially_absent",
+            Self::UpdateTeacherFullyAbsent => "update_teacher_fully_absent",
+            Self::UpdateTeacherPartiallyAbsent { .. } => "update_teacher_partially_absent",
+            Self::UpdateTeacherPresent => "update_teacher_present",
+            Self::ReminderTeacherBackIn => "reminder_teacher_back_in",
+        }
     }
+}
 
-    let notification = builder.finalize();
+pub async fn notify(payload: &NotificationPayload) -> Result<(), Box<dyn Error + Send>> {
+    // Get the global Firebase client
+    let client = match get_client() {
+        Ok(c) => c,
+        Err(e) => return Err(Box::new(e)),
+    };
+    
+    println!("Building notification...");
+    let NotificationPayload { topic, title, body, analytics } = payload;
+    let notification = Notification {
+        title: Some(title.clone()),
+        body: body.clone(),
+        image: None,
+    };
+
+    println!("Building FCM message...");
+    let message = Message {
+        name: Some(title.clone()),
+        notification: Some(notification),
+        fcm_options: Some(FcmOptions { analytics_label: analytics.clone() }),
+        token: Some(topic.to_string()),
+        ..Default::default()
+    };
 
     println!("Sending notif with topic {topic:?}");
-    let mut builder = MessageBuilder::new(api_key.as_str(), &topic);
-    builder.notification(notification);
-    let message = builder.finalize();
-
-    match client.send(message).await {
+    match client.send(&message).await {
         Ok(response) => {
             println!("Sent: {:?}", response);
             Ok(())

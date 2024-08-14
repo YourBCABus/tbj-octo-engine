@@ -36,6 +36,7 @@ pub struct NotificationPayload {
     pub topic: Topic,
     pub title: String,
     pub body: Option<String>,
+    pub analytics: Option<String>,
 }
 
 impl From<NotificationDetails> for NotificationPayload {
@@ -72,6 +73,7 @@ impl From<NotificationDetails> for NotificationPayload {
             topic: value.topic,
             title,
             body: Some(body),
+            analytics: Some(value.notification_type.analytics_label().to_string()),
         }
     }
 }
